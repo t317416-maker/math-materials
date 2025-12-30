@@ -1,0 +1,21 @@
+# バックアップファイル
+*_old.html
+*_old.css
+*_old.js
+
+# 一時ファイル
+nul
+
+# Claude設定（ローカル環境固有）
+.claude/
+
+# 会話ログ（任意: 公開したくない場合）
+conversation_log.md
+
+# エディタ設定
+.vscode/
+.idea/
+
+# OS固有ファイル
+.DS_Store
+Thumbs.db
