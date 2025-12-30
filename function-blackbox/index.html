@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ふしぎなブラックボックス</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>ふしぎなブラックボックス</h1>
+        <p>ブラックボックスに数字を入力すると、あるルールに従って数字が出力される。</p>
+        <p>どんなルールがあるか考えよう。</p>
+
+
+        <div class="controls">
+            <label for="rule-select">箱の中のルールを選ぼう:</label>
+            <select id="rule-select">
+                <option value="A">ルールA</option>
+                <option value="B">ルールB</option>
+                <option value="C">ルールC</option>
+                <option value="D">ルールD</option>
+                <option value="E">ルールE</option>
+            </select>
+        </div>
+
+        <div class="blackbox-area">
+            <div class="io-zone input-zone">
+                <div class="card-input-area">
+                    <label for="x-input">入力 (x)</label>
+                    <input type="number" id="x-input" placeholder="数字を入力">
+                    <button id="calculate-btn">このカードを入れる！</button>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="blackbox">
+                <div class="box-label">BLACK BOX</div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="io-zone output-zone">
+                <div class="card-output-area">
+                    <label>出力 (y)</label>
+                    <div id="y-output">?</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="history-area">
+            <h2>記録</h2>
+            <table id="history-table">
+                <thead>
+                    <tr>
+                        <th>入力 (x)</th>
+                        <th>出力 (y)</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body">
+                    </tbody>
+            </table>
+            <button id="reset-btn">記録をリセット</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
