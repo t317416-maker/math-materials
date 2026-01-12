@@ -453,8 +453,14 @@ function showCardPhase() {
         return;
     }
 
+    // プレイヤー2（下側）は横並び、それ以外は縦並び
+    const isPlayerBottom = gameState.currentPlayerIndex === 1;
+    const cardsStyle = isPlayerBottom
+        ? 'display: flex; flex-direction: row; gap: 8px; flex-wrap: wrap; justify-content: center;'
+        : 'display: flex; flex-direction: column; gap: 8px;';
+
     let html = '<h3 style="font-size: 16px; margin-bottom: 10px;">🎴 カードを使用しますか？</h3>';
-    html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
+    html += `<div style="${cardsStyle}">`;
 
     player.cards.forEach((cardName, index) => {
         const card = cardDefinitions[cardName];
@@ -521,10 +527,17 @@ function showQuestionPhase() {
 
     // プレイヤー専用エリアに問題を表示
     const playerGameSpace = document.getElementById(`game-space-${gameState.currentPlayerIndex}`);
+
+    // プレイヤー2（下側）は横並び、それ以外は縦並び
+    const isPlayerBottom = gameState.currentPlayerIndex === 1;
+    const choicesStyle = isPlayerBottom
+        ? 'display: flex; flex-direction: row; gap: 8px; flex-wrap: wrap; justify-content: center;'
+        : 'display: flex; flex-direction: column; gap: 8px;';
+
     let html = '<h3 style="font-size: 16px; margin-bottom: 10px;">計算問題</h3>';
     html += `<div class="timer-display" id="timer-display" style="font-size: 14px; padding: 6px; margin: 8px 0;">残り時間: ${gameState.timeRemaining}秒</div>`;
     html += `<div class="question-text" style="font-size: 20px; padding: 12px; margin: 10px 0;">${question.question}</div>`;
-    html += '<div class="choices" id="choices-container" style="gap: 8px;">';
+    html += `<div class="choices" id="choices-container" style="${choicesStyle}">`;
 
     choices.forEach(choice => {
         html += `<button class="btn btn-primary choice-btn" style="padding: 10px; font-size: 16px;" onclick="checkAnswer(${choice})">${choice}</button>`;
