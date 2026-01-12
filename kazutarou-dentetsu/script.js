@@ -989,6 +989,11 @@ function showMessage(text, type = 'info') {
  */
 function showStartScreen() {
     const commonArea = document.getElementById('common-game-area');
+    if (!commonArea) {
+        console.error('common-game-area element not found in DOM');
+        console.log('Available elements with id:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+        return;
+    }
     let html = '<div style="text-align: center;">';
     html += '<h2>🎯 ゲームスタート</h2>';
     html += '<p style="margin: 20px 0; color: #666;">プレイ人数を選択してください</p>';
