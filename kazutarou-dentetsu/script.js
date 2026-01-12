@@ -1,4 +1,156 @@
 // ========================================
+// 効果音システム (Web Audio API)
+// ========================================
+
+/**
+ * Web Audio APIを使った効果音生成システム
+ */
+const SoundEffects = {
+    audioContext: null,
+
+    // Audio Contextの初期化
+    init() {
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    },
+
+    // 正解時の効果音（ピンポン音）
+    playCorrect() {
+        this.init();
+        const ctx = this.audioContext;
+        const now = ctx.currentTime;
+
+        // 高音（ピン）
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.frequency.value = 880; // A5
+        gain1.gain.setValueAtTime(0.3, now);
+        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc1.start(now);
+        osc1.stop(now + 0.2);
+
+        // 低音（ポン）
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.frequency.value = 660; // E5
+        gain2.gain.setValueAtTime(0, now + 0.1);
+        gain2.gain.setValueAtTime(0.3, now + 0.1);
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc2.start(now + 0.1);
+        osc2.stop(now + 0.4);
+    },
+
+    // 不正解時の効果音（ブブー音）
+    playIncorrect() {
+        this.init();
+        const ctx = this.audioContext;
+        const now = ctx.currentTime;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.value = 100;
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        osc.start(now);
+        osc.stop(now + 0.5);
+    },
+
+    // カード取得時の効果音（キラキラ音）
+    playCardGet() {
+        this.init();
+        const ctx = this.audioContext;
+        const now = ctx.currentTime;
+
+        // 上昇音階のキラキラ音
+        const frequencies = [523, 659, 784, 1047]; // C, E, G, C (high)
+        frequencies.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            const startTime = now + i * 0.08;
+            gain.gain.setValueAtTime(0.2, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+            osc.start(startTime);
+            osc.stop(startTime + 0.3);
+        });
+    },
+
+    // 駅到達時の効果音（ファンファーレ）
+    playStationReached() {
+        this.init();
+        const ctx = this.audioContext;
+        const now = ctx.currentTime;
+
+        // ファンファーレのメロディー
+        const melody = [
+            { freq: 523, time: 0 },    // C
+            { freq: 659, time: 0.15 },  // E
+            { freq: 784, time: 0.3 },   // G
+            { freq: 1047, time: 0.45 }  // C (high)
+        ];
+
+        melody.forEach((note) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'triangle';
+            osc.frequency.value = note.freq;
+            const startTime = now + note.time;
+            gain.gain.setValueAtTime(0.25, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.4);
+            osc.start(startTime);
+            osc.stop(startTime + 0.4);
+        });
+    },
+
+    // タイマー警告音（カチカチ音）
+    playTimerTick() {
+        this.init();
+        const ctx = this.audioContext;
+        const now = ctx.currentTime;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 800;
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        osc.start(now);
+        osc.stop(now + 0.05);
+    },
+
+    // ボタンクリック音
+    playClick() {
+        this.init();
+        const ctx = this.audioContext;
+        const now = ctx.currentTime;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 300;
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
+        osc.start(now);
+        osc.stop(now + 0.03);
+    }
+};
+
+// ========================================
 // ゲーム状態管理
 // ========================================
 
@@ -237,6 +389,8 @@ function showCardAcquiredEffect(cardName) {
     const player = getCurrentPlayer();
     const gameArea = document.getElementById('game-area');
 
+    SoundEffects.playCardGet(); // カード取得音を再生
+
     let html = '<div class="card-acquired-effect">';
     html += '<div class="sparkle">✨</div>';
     html += `<h2>カード獲得!</h2>`;
@@ -391,10 +545,11 @@ function startTimer() {
         if (timerDisplay) {
             timerDisplay.textContent = `残り時間: ${gameState.timeRemaining}秒`;
 
-            // 残り1秒で赤くする
+            // 残り1秒で赤くして警告音を鳴らす
             if (gameState.timeRemaining <= 1) {
                 timerDisplay.style.color = '#e53935';
                 timerDisplay.style.fontWeight = 'bold';
+                SoundEffects.playTimerTick(); // 警告音を再生
             }
         }
 
@@ -465,11 +620,13 @@ function checkAnswer(selectedAnswer) {
     }
 
     if (isCorrect) {
+        SoundEffects.playCorrect(); // 正解音を再生
         showMessage(`正解です! 答えは ${gameState.currentAnswer} です`, 'success');
         setTimeout(() => {
             showMovePhase();
         }, 1500);
     } else {
+        SoundEffects.playIncorrect(); // 不正解音を再生
         showMessage(`不正解です。正解は ${gameState.currentAnswer} でした。移動できません。`, 'error');
         setTimeout(() => {
             endTurn();
@@ -556,6 +713,7 @@ function checkStationReach() {
         updateNumberLine();
         updateScoreboard();
 
+        SoundEffects.playStationReached(); // 駅到達音を再生
         showMessage(`🎉 駅 ${gameState.targetStation} に到達しました! +15点`, 'celebration');
 
         gameState.currentStationIndex = (gameState.currentStationIndex + 1) % gameState.stations.length;
