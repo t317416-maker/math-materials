@@ -334,6 +334,10 @@ function initializeGame(numPlayers = 3) {
     gameState.targetStation = gameState.stations[0];
     gameState.phase = 'card';
 
+    // 共通エリアを非表示
+    const commonArea = document.getElementById('common-game-area');
+    commonArea.classList.remove('active');
+
     // プレイヤー配列を作成
     const colors = ["#FF6B6B", "#4ECDC4", "#95E77D", "#FFE66D"];
     const markers = ["🔴", "🔵", "🟢", "🟡"];
@@ -387,21 +391,21 @@ function startTurn() {
  */
 function showCardAcquiredEffect(cardName) {
     const player = getCurrentPlayer();
-    const gameArea = document.getElementById('game-area');
+    const playerGameSpace = document.getElementById(`game-space-${gameState.currentPlayerIndex}`);
 
     SoundEffects.playCardGet(); // カード取得音を再生
 
     let html = '<div class="card-acquired-effect">';
     html += '<div class="sparkle">✨</div>';
-    html += `<h2>カード獲得!</h2>`;
-    html += `<div class="acquired-card">`;
-    html += `<div class="card-name">${cardName}</div>`;
-    html += `<div class="card-description">${cardDefinitions[cardName].description}</div>`;
+    html += `<h2 style="font-size: 18px; margin: 10px 0;">カード獲得!</h2>`;
+    html += `<div style="background: linear-gradient(135deg, #fff9e6 0%, #ffe6b3 100%); border: 3px solid #ffd700; border-radius: 12px; padding: 15px; margin: 10px 0;">`;
+    html += `<div style="font-size: 16px; font-weight: bold; color: #d4a017; margin-bottom: 5px;">${cardName}</div>`;
+    html += `<div style="font-size: 12px; color: #666;">${cardDefinitions[cardName].description}</div>`;
     html += `</div>`;
     html += '<div class="sparkle">✨</div>';
     html += '</div>';
 
-    gameArea.innerHTML = html;
+    playerGameSpace.innerHTML = html;
 }
 
 /**
@@ -440,7 +444,7 @@ function getCurrentPlayer() {
  */
 function showCardPhase() {
     const player = getCurrentPlayer();
-    const gameArea = document.getElementById('game-area');
+    const playerGameSpace = document.getElementById(`game-space-${gameState.currentPlayerIndex}`);
 
     if (player.cards.length === 0) {
         setTimeout(() => {
@@ -449,23 +453,23 @@ function showCardPhase() {
         return;
     }
 
-    let html = '<h3>カードを使用しますか？</h3>';
-    html += '<div class="btn-group">';
+    let html = '<h3 style="font-size: 16px; margin-bottom: 10px;">🎴 カードを使用しますか？</h3>';
+    html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
 
     player.cards.forEach((cardName, index) => {
         const card = cardDefinitions[cardName];
         html += `
-            <button class="btn btn-warning" onclick="useCard(${index})">
-                <div>${cardName}</div>
-                <div style="font-size: 12px; font-weight: normal;">${card.description}</div>
+            <button class="btn btn-warning" style="padding: 10px; font-size: 14px;" onclick="useCard(${index})">
+                <div style="font-weight: bold;">${cardName}</div>
+                <div style="font-size: 11px; font-weight: normal;">${card.description}</div>
             </button>
         `;
     });
 
     html += '</div>';
-    html += '<div class="btn-group"><button class="btn btn-secondary" onclick="skipCard()">カードを使わない</button></div>';
+    html += '<button class="btn btn-secondary" style="margin-top: 10px; padding: 10px; font-size: 14px;" onclick="skipCard()">使わない</button>';
 
-    gameArea.innerHTML = html;
+    playerGameSpace.innerHTML = html;
 }
 
 /**
@@ -789,17 +793,19 @@ function showFinalResults() {
 
     const ranking = [...gameState.players].sort((a, b) => b.score - a.score);
 
-    const gameArea = document.getElementById('game-area');
+    const commonArea = document.getElementById('common-game-area');
     let html = '<div class="final-results">';
     html += '<h2>🎊 ゲーム終了!</h2>';
-    html += '<div class="ranking">';
+    html += '<div class="ranking" style="margin: 20px 0;">';
 
     ranking.forEach((player, index) => {
-        const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
-        const medal = index === 0 ? '🏆' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+        const medal = index === 0 ? '🏆' : index === 1 ? '🥈' : index === 2 ? '🥉' : '📍';
+        const bgColor = index === 0 ? 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)' :
+                        index === 1 ? 'linear-gradient(135deg, #c0c0c0 0%, #e0e0e0 100%)' :
+                        index === 2 ? 'linear-gradient(135deg, #cd7f32 0%, #daa520 100%)' : '#f0f0f0';
         html += `
-            <div class="rank-item ${rankClass}">
-                ${medal} ${index + 1}位: ${player.name} ${player.marker} ${player.score}点
+            <div style="background: ${bgColor}; padding: 15px; margin: 10px 0; border-radius: 10px; font-size: 18px; font-weight: bold;">
+                ${medal} ${index + 1}位: ${player.name} ${player.marker} - ${player.score}点
             </div>
         `;
     });
@@ -808,7 +814,14 @@ function showFinalResults() {
     html += '<button class="btn btn-primary" onclick="location.reload()">もう一度遊ぶ</button>';
     html += '</div>';
 
-    gameArea.innerHTML = html;
+    commonArea.innerHTML = html;
+    commonArea.classList.add('active');
+
+    // プレイヤーエリアをクリア
+    for (let i = 0; i < gameState.numPlayers; i++) {
+        const playerSpace = document.getElementById(`game-space-${i}`);
+        if (playerSpace) playerSpace.innerHTML = '';
+    }
 }
 
 // ========================================
@@ -955,11 +968,16 @@ function updateCardsDisplay() {
  * @param {string} type - メッセージタイプ
  */
 function showMessage(text, type = 'info') {
-    const gameArea = document.getElementById('game-area');
+    const playerGameSpace = document.getElementById(`game-space-${gameState.currentPlayerIndex}`);
+    if (!playerGameSpace) return;
+
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}`;
+    messageDiv.style.fontSize = '14px';
+    messageDiv.style.padding = '10px';
+    messageDiv.style.margin = '10px 0';
     messageDiv.innerHTML = text;
-    gameArea.insertBefore(messageDiv, gameArea.firstChild);
+    playerGameSpace.insertBefore(messageDiv, playerGameSpace.firstChild);
 }
 
 // ========================================
@@ -970,27 +988,27 @@ function showMessage(text, type = 'info') {
  * ゲーム開始画面を表示
  */
 function showStartScreen() {
-    const gameArea = document.getElementById('game-area');
+    const commonArea = document.getElementById('common-game-area');
     let html = '<div style="text-align: center;">';
-    html += '<h2>ゲームスタート</h2>';
+    html += '<h2>🎯 ゲームスタート</h2>';
     html += '<p style="margin: 20px 0; color: #666;">プレイ人数を選択してください</p>';
     html += '<div class="btn-group">';
     html += '<button class="btn btn-primary" onclick="startGame(2)">2人</button>';
     html += '<button class="btn btn-primary" onclick="startGame(3)">3人（推奨）</button>';
-    html += '<button class="btn btn-primary" onclick="startGame(4)">4人</button>';
     html += '</div>';
     html += '<div style="margin-top: 30px; padding: 20px; background: #f0f0f0; border-radius: 10px; text-align: left;">';
-    html += '<h4>ゲームルール</h4>';
+    html += '<h4>📖 ゲームルール</h4>';
     html += '<ul style="margin-left: 20px; line-height: 1.8;">';
     html += '<li><strong>⏱️ 制限時間3秒</strong>で計算問題に回答</li>';
-    html += '<li>正解すると、答えの数だけ移動できます（負の数もあり）</li>';
+    html += '<li>正解すると、<strong>自動で目的地方向へ移動</strong>します</li>';
     html += '<li>駅（★）の±3マス以内に到達すると<strong>+15点</strong></li>';
     html += '<li>✨カードを使って有利に進めよう!</li>';
     html += '<li>10ターン終了時に最も得点が高いプレイヤーが勝利!</li>';
     html += '</ul>';
     html += '</div>';
     html += '</div>';
-    gameArea.innerHTML = html;
+    commonArea.innerHTML = html;
+    commonArea.classList.add('active');
 }
 
 /**
