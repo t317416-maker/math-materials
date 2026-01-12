@@ -515,18 +515,19 @@ function showQuestionPhase() {
     gameState.timeRemaining = gameState.answerTimeLimit;
     startTimer();
 
-    const gameArea = document.getElementById('game-area');
-    let html = '<h3>計算問題</h3>';
-    html += `<div class="timer-display" id="timer-display">残り時間: ${gameState.timeRemaining}秒</div>`;
-    html += `<div class="question-text">${question.question}</div>`;
-    html += '<div class="choices" id="choices-container">';
+    // プレイヤー専用エリアに問題を表示
+    const playerGameSpace = document.getElementById(`game-space-${gameState.currentPlayerIndex}`);
+    let html = '<h3 style="font-size: 16px; margin-bottom: 10px;">計算問題</h3>';
+    html += `<div class="timer-display" id="timer-display" style="font-size: 14px; padding: 6px; margin: 8px 0;">残り時間: ${gameState.timeRemaining}秒</div>`;
+    html += `<div class="question-text" style="font-size: 20px; padding: 12px; margin: 10px 0;">${question.question}</div>`;
+    html += '<div class="choices" id="choices-container" style="gap: 8px;">';
 
     choices.forEach(choice => {
-        html += `<button class="btn btn-primary choice-btn" onclick="checkAnswer(${choice})">${choice}</button>`;
+        html += `<button class="btn btn-primary choice-btn" style="padding: 10px; font-size: 16px;" onclick="checkAnswer(${choice})">${choice}</button>`;
     });
 
     html += '</div>';
-    gameArea.innerHTML = html;
+    playerGameSpace.innerHTML = html;
 }
 
 /**
@@ -623,7 +624,7 @@ function checkAnswer(selectedAnswer) {
         SoundEffects.playCorrect(); // 正解音を再生
         showMessage(`正解です! 答えは ${gameState.currentAnswer} です`, 'success');
         setTimeout(() => {
-            showMovePhase();
+            autoMoveToTarget(); // 自動で目的地方向へ移動
         }, 1500);
     } else {
         SoundEffects.playIncorrect(); // 不正解音を再生
@@ -632,6 +633,34 @@ function checkAnswer(selectedAnswer) {
             endTurn();
         }, 2000);
     }
+}
+
+/**
+ * 自動で目的地方向へ移動する
+ */
+function autoMoveToTarget() {
+    const player = getCurrentPlayer();
+    let distance = Math.abs(gameState.currentAnswer);
+
+    if (gameState.moveDoubleActive) {
+        distance *= 2;
+        gameState.moveDoubleActive = false;
+    }
+
+    // 目的地への方向を計算
+    const direction = gameState.targetStation - player.position;
+
+    // 目的地の方向へ移動
+    let moveDistance;
+    if (direction > 0) {
+        moveDistance = distance; // 正方向へ移動
+    } else if (direction < 0) {
+        moveDistance = -distance; // 負方向へ移動
+    } else {
+        moveDistance = 0; // すでに目的地にいる
+    }
+
+    movePlayer(moveDistance);
 }
 
 // ========================================
@@ -801,8 +830,11 @@ function updateAllUI() {
  */
 function updateGameInfo() {
     document.getElementById('turn-display').textContent = `${gameState.currentTurn} / ${gameState.maxTurns}`;
-    document.getElementById('current-player-display').textContent = getCurrentPlayer().name;
     document.getElementById('target-station-display').textContent = gameState.targetStation;
+
+    // 背景色を現在のプレイヤーの色に変更
+    const body = document.body;
+    body.className = `player-${gameState.currentPlayerIndex}-turn`;
 }
 
 /**

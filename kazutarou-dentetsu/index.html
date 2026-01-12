@@ -7,56 +7,78 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <!-- タイトル -->
-        <h1>🎯 数直線対戦計算ゲーム</h1>
-
-        <!-- ゲーム情報 -->
-        <div class="game-info">
-            <div class="info-item">
-                <div class="info-label">ターン</div>
-                <div class="info-value" id="turn-display">1 / 10</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">現在のプレイヤー</div>
-                <div class="info-value" id="current-player-display">プレイヤー1</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">目的地駅</div>
-                <div class="info-value" id="target-station-display">-16</div>
+    <div class="game-board">
+        <!-- プレイヤー1のエリア（左） -->
+        <div class="player-zone player-zone-left" id="player-zone-0">
+            <div class="player-area">
+                <div class="player-header">
+                    <h2>🔴 プレイヤー1</h2>
+                </div>
+                <div class="player-game-space" id="game-space-0"></div>
             </div>
         </div>
 
-        <!-- 数直線エリア -->
-        <div class="number-line-container">
-            <div class="number-line" id="number-line">
-                <div class="line"></div>
-                <div class="scale-labels">
-                    <span>-20</span>
-                    <span>-10</span>
-                    <span>0</span>
-                    <span>+10</span>
-                    <span>+20</span>
+        <!-- 中央エリア -->
+        <div class="center-area">
+            <!-- タイトル -->
+            <div class="title-section">
+                <h1>🎯 数直線対戦計算ゲーム</h1>
+            </div>
+
+            <!-- ゲーム情報 -->
+            <div class="game-info">
+                <div class="info-item">
+                    <div class="info-label">ターン</div>
+                    <div class="info-value" id="turn-display">1 / 10</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">目的地駅</div>
+                    <div class="info-value" id="target-station-display">-16</div>
                 </div>
             </div>
+
+            <!-- 数直線エリア -->
+            <div class="number-line-container">
+                <div class="number-line" id="number-line">
+                    <div class="line"></div>
+                    <div class="scale-labels">
+                        <span>-20</span>
+                        <span>-10</span>
+                        <span>0</span>
+                        <span>+10</span>
+                        <span>+20</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- スコアボード -->
+            <div class="scoreboard">
+                <div id="scoreboard-container"></div>
+            </div>
         </div>
 
-        <!-- スコアボード -->
-        <div class="scoreboard">
-            <h3>📊 スコアボード</h3>
-            <div id="scoreboard-container"></div>
+        <!-- プレイヤー2のエリア（下） -->
+        <div class="player-zone player-zone-bottom" id="player-zone-1">
+            <div class="player-area">
+                <div class="player-header">
+                    <h2>🔵 プレイヤー2</h2>
+                </div>
+                <div class="player-game-space" id="game-space-1"></div>
+            </div>
         </div>
 
-        <!-- カードエリア -->
-        <div class="cards-container">
-            <div class="cards-title">🎴 手札</div>
-            <div id="cards-display">カードなし</div>
+        <!-- プレイヤー3のエリア（右） -->
+        <div class="player-zone player-zone-right" id="player-zone-2">
+            <div class="player-area">
+                <div class="player-header">
+                    <h2>🟢 プレイヤー3</h2>
+                </div>
+                <div class="player-game-space" id="game-space-2"></div>
+            </div>
         </div>
 
-        <!-- ゲームエリア -->
-        <div class="game-area" id="game-area">
-            <!-- ゲームの状態に応じて動的に変化 -->
-        </div>
+        <!-- 共通ゲームエリア（初期画面・カード選択など） -->
+        <div class="common-game-area" id="common-game-area"></div>
     </div>
 
     <script src="script.js"></script>
