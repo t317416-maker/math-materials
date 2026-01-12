@@ -938,28 +938,11 @@ function updateScoreboard() {
 
 /**
  * カード表示を更新
+ * 注: 新しいレイアウトではカード情報はスコアボードに表示されるため、この関数は空実装
  */
 function updateCardsDisplay() {
-    const container = document.getElementById('cards-display');
-    const player = getCurrentPlayer();
-
-    if (player.cards.length === 0) {
-        container.innerHTML = '<span style="color: #999;">カードなし</span>';
-        return;
-    }
-
-    let html = '';
-    player.cards.forEach(cardName => {
-        const card = cardDefinitions[cardName];
-        html += `
-            <div class="card">
-                <div class="card-name">${cardName}</div>
-                <div class="card-description">${card.description}</div>
-            </div>
-        `;
-    });
-
-    container.innerHTML = html;
+    // カード情報はupdateScoreboard()でプレイヤーカードとして表示される
+    // この関数は互換性のために残しているが、何もしない
 }
 
 /**
