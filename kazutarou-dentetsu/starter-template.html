@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数直線対戦計算ゲーム</title>
+    <style>
+        /* ========================================
+           基本スタイル
+           ======================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        /* ========================================
+           タイトル
+           ======================================== */
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        /* ========================================
+           ゲーム情報エリア
+           ======================================== */
+        .game-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            text-align: center;
+            margin: 5px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* ========================================
+           数直線エリア（TODO: 実装する）
+           ======================================== */
+        .number-line-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            min-height: 150px;
+        }
+
+        /* ========================================
+           スコアボード
+           ======================================== */
+        .scoreboard {
+            margin: 20px 0;
+        }
+
+        .player-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+
+        .player-score.active {
+            background: #667eea;
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .player-name {
+            font-weight: bold;
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        /* ========================================
+           カードエリア（TODO: 実装する）
+           ======================================== */
+        .cards-container {
+            margin: 20px 0;
+            min-height: 80px;
+            padding: 15px;
+            background: #fff9e6;
+            border-radius: 10px;
+            border: 2px dashed #ffd700;
+        }
+
+        .cards-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #d4a017;
+        }
+
+        /* ========================================
+           ゲームエリア（TODO: 実装する）
+           ======================================== */
+        .game-area {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            min-height: 200px;
+        }
+
+        /* ========================================
+           ボタン
+           ======================================== */
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        /* ========================================
+           レスポンシブデザイン
+           ======================================== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .game-info {
+                flex-direction: column;
+            }
+
+            .player-stats {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- タイトル -->
+        <h1>🎯 数直線対戦計算ゲーム</h1>
+
+        <!-- ゲーム情報 -->
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">ターン</div>
+                <div class="info-value" id="turn-display">1 / 10</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">現在のプレイヤー</div>
+                <div class="info-value" id="current-player-display">プレイヤー1</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">目的地駅</div>
+                <div class="info-value" id="target-station-display">-16</div>
+            </div>
+        </div>
+
+        <!-- 数直線エリア（TODO: 実装） -->
+        <div class="number-line-container">
+            <div style="text-align: center; padding: 50px; color: #999;">
+                ここに数直線を表示（TODO）
+            </div>
+        </div>
+
+        <!-- スコアボード -->
+        <div class="scoreboard">
+            <h3>スコアボード</h3>
+            <div class="player-score active">
+                <span class="player-name">🔴 プレイヤー1</span>
+                <div class="player-stats">
+                    <span>得点: <strong>0点</strong></span>
+                    <span>位置: <strong>0</strong></span>
+                </div>
+            </div>
+            <div class="player-score">
+                <span class="player-name">🔵 プレイヤー2</span>
+                <div class="player-stats">
+                    <span>得点: <strong>0点</strong></span>
+                    <span>位置: <strong>0</strong></span>
+                </div>
+            </div>
+            <div class="player-score">
+                <span class="player-name">🟢 プレイヤー3</span>
+                <div class="player-stats">
+                    <span>得点: <strong>0点</strong></span>
+                    <span>位置: <strong>0</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- カードエリア（TODO: 実装） -->
+        <div class="cards-container">
+            <div class="cards-title">🎴 手札</div>
+            <div style="color: #999;">カードなし</div>
+        </div>
+
+        <!-- ゲームエリア（TODO: 実装） -->
+        <div class="game-area">
+            <div style="text-align: center;">
+                <h3>ゲームスタート準備中...</h3>
+                <button class="btn btn-primary" onclick="startGame()">ゲーム開始</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // ゲーム状態管理
+        // ========================================
+        
+        /**
+         * ゲームの状態を管理するオブジェクト
+         */
+        const gameState = {
+            // ゲーム設定
+            numPlayers: 3,              // プレイヤー人数
+            maxTurns: 10,               // 最大ターン数
+            stations: [-16, -8, 0, 8, 16],  // 駅の位置
+            
+            // 現在の状態
+            currentTurn: 1,             // 現在のターン（1〜10）
+            currentPlayerIndex: 0,      // 現在のプレイヤーインデックス（0〜2）
+            currentStationIndex: 0,     // 現在の目的地駅のインデックス
+            targetStation: -16,         // 目的地駅の位置
+            
+            // プレイヤーデータ
+            players: [
+                {
+                    id: 0,
+                    name: "プレイヤー1",
+                    position: 0,       // 数直線上の位置
+                    score: 0,          // 合計得点
+                    cards: [],         // 手札カード
+                    color: "#FF6B6B"   // プレイヤーカラー
+                },
+                {
+                    id: 1,
+                    name: "プレイヤー2",
+                    position: 0,
+                    score: 0,
+                    cards: [],
+                    color: "#4ECDC4"
+                },
+                {
+                    id: 2,
+                    name: "プレイヤー3",
+                    position: 0,
+                    score: 0,
+                    cards: [],
+                    color: "#95E77D"
+                }
+            ],
+            
+            // ターン内の一時データ
+            currentQuestion: null,      // 現在の問題
+            currentAnswer: null,        // プレイヤーの答え
+            moveDoubleActive: false,    // 移動数2倍フラグ
+            pointDoubleActive: false    // ポイント2倍フラグ
+        };
+
+        // ========================================
+        // 問題プール（TODO: 問題を追加する）
+        // ========================================
+        
+        const questionPool = [
+            // 正負の数の加減
+            {
+                type: "addition",
+                question: "3 + 2 = ?",
+                correctAnswer: 5,
+                choices: [5, 4, 6]
+            },
+            {
+                type: "addition",
+                question: "7 - 4 = ?",
+                correctAnswer: 3,
+                choices: [3, 2, 4]
+            },
+            // TODO: 問題を20問以上追加する
+        ];
+
+        // ========================================
+        // カード定義（TODO: 実装する）
+        // ========================================
+        
+        const cardDefinitions = {
+            "ランダムぶっとび": {
+                description: "-2〜+4マスのランダム移動",
+                effect: function(player, gameState) {
+                    // TODO: カード効果を実装
+                }
+            },
+            // TODO: 他のカードを実装
+        };
+
+        // ========================================
+        // ゲーム開始
+        // ========================================
+        
+        /**
+         * ゲームを開始する
+         */
+        function startGame() {
+            console.log("ゲーム開始!");
+            // TODO: ゲーム開始処理を実装
+            alert("TODO: ゲーム開始処理を実装してください");
+        }
+
+        // ========================================
+        // 以下、実装が必要な関数
+        // ========================================
+        
+        // TODO: カード獲得判定
+        function drawCard() {
+            // 30%の確率でカードを獲得
+        }
+
+        // TODO: カード使用
+        function useCard(cardName) {
+            // カードの効果を適用
+        }
+
+        // TODO: 問題生成
+        function generateQuestion() {
+            // questionPoolからランダムに問題を選択
+        }
+
+        // TODO: 正誤判定
+        function checkAnswer(selectedAnswer) {
+            // 正解/不正解を判定
+        }
+
+        // TODO: 移動実行
+        function movePlayer(direction) {
+            // プレイヤーを移動
+            // direction: 1 (正方向), -1 (負方向), 0 (移動しない)
+        }
+
+        // TODO: 駅到達判定
+        function checkStationReach() {
+            // 駅の±3マス以内かチェック
+        }
+
+        // TODO: 次の駅設定
+        function setNextStation() {
+            // 次の駅を設定
+        }
+
+        // TODO: ターン終了処理
+        function endTurn() {
+            // 次のプレイヤーまたは次のターンへ
+        }
+
+        // TODO: ゲーム終了判定
+        function checkGameEnd() {
+            // 10ターン終了したかチェック
+        }
+
+        // TODO: 最終結果表示
+        function showFinalResults() {
+            // ランキングを表示
+        }
+
+        // ========================================
+        // UI更新関数
+        // ========================================
+        
+        // TODO: 数直線を描画
+        function renderNumberLine() {
+            // SVGまたはCanvasで数直線を描画
+        }
+
+        // TODO: スコアボードを更新
+        function updateScoreboard() {
+            // スコアボードの表示を更新
+        }
+
+        // TODO: カード表示を更新
+        function updateCardsDisplay() {
+            // 手札カードの表示を更新
+        }
+
+        // TODO: ゲーム情報を更新
+        function updateGameInfo() {
+            // ターン、プレイヤー、目的地の表示を更新
+        }
+
+    </script>
+</body>
+</html>
